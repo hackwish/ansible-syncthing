@@ -48,6 +48,49 @@
     enabled: yes
   become: yes
 
+#IP TABLES RULES
+- name: Firewall rule - allow port 8384 traffic
+  iptables:
+    chain: INPUT
+    destination_port: '8384'
+    jump: ACCEPT
+    protocol: tcp
+  tags: timezone
+
+- name: Firewall rule - allow port 22000 traffic TCP
+  iptables:
+    chain: INPUT
+    destination_port: '22000'
+    jump: ACCEPT
+    protocol: tcp
+  tags: timezone
+
+- name: Firewall rule - allow port 22000 traffic UDP
+  iptables:
+    chain: INPUT
+    destination_port: '22000'
+    jump: ACCEPT
+    protocol: udp
+  tags: timezone
+
+- name: Firewall rule - allow port 21027 traffic UDP
+  iptables:
+    chain: INPUT
+    destination_port: '21027'
+    jump: ACCEPT
+    protocol: udp
+  tags: timezone
+
+# Save IPTABLES rules
+- name: save iptables
+  command: netfilter-persistent save
+  when: ansible_os_family == "Debian"
+
+- name: reload iptables
+  command: netfilter-persistent reload
+  when: ansible_os_family == "Debian"
+
+# Check service
 - command: syncthing --version
   register: result_syncthing
   failed_when: false
