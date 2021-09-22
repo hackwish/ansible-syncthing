@@ -6,23 +6,27 @@
     name: apt-transport-https
     state: present
   when: ansible_os_family == "Debian"
+  tags: syncthing
 
 # Install Repo
 - apt_key:
     url: https://syncthing.net/release-key.txt
     state: present
   when: ansible_os_family == "Debian"
+  tags: syncthing
 
 - apt_repository:
     repo: deb https://apt.syncthing.net/ syncthing stable
     state: present
   when: ansible_os_family == "Debian"
+  tags: syncthing
 
 # Install Package
 - name: Install Syncthing
   ansible.builtin.package:
     name: syncthing
     state: present
+  tags: syncthing
 
 # Create and enable service
 - name: Create syncthing service for {{ ansible_user }}
@@ -34,6 +38,7 @@
     mode: 0644
   register: syncthing_service
   become: yes
+  tags: syncthing
 
 - name: Reload systemd
   systemd:
@@ -47,6 +52,7 @@
     state: started
     enabled: yes
   become: yes
+  tags: syncthing
 
 #IP TABLES RULES
 - name: Firewall rule - allow port 8384 traffic
@@ -55,7 +61,7 @@
     destination_port: '8384'
     jump: ACCEPT
     protocol: tcp
-  tags: timezone
+  tags: syncthing
 
 - name: Firewall rule - allow port 22000 traffic TCP
   iptables:
@@ -63,7 +69,7 @@
     destination_port: '22000'
     jump: ACCEPT
     protocol: tcp
-  tags: timezone
+  tags: syncthing
 
 - name: Firewall rule - allow port 22000 traffic UDP
   iptables:
@@ -71,7 +77,7 @@
     destination_port: '22000'
     jump: ACCEPT
     protocol: udp
-  tags: timezone
+  tags: syncthing
 
 - name: Firewall rule - allow port 21027 traffic UDP
   iptables:
@@ -79,22 +85,26 @@
     destination_port: '21027'
     jump: ACCEPT
     protocol: udp
-  tags: timezone
+  tags: syncthing
 
 # Save IPTABLES rules
 - name: save iptables
   command: netfilter-persistent save
   when: ansible_os_family == "Debian"
+  tags: syncthing
 
 - name: reload iptables
   command: netfilter-persistent reload
   when: ansible_os_family == "Debian"
+  tags: syncthing
 
 # Check service
 - command: syncthing --version
   register: result_syncthing
   failed_when: false
   changed_when: false
+  tags: syncthing
 
 - debug:
     var: result_syncthing.stdout
+  tags: syncthing
