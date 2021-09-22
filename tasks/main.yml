@@ -1,0 +1,57 @@
+---
+# tasks file for ansible-syncthing
+# Install Deps
+- name: Install Dependencies
+  apt:
+    name: apt-transport-https
+    state: present
+  when: ansible_os_family == "Debian"
+
+# Install Repo
+- apt_key:
+    url: https://syncthing.net/release-key.txt
+    state: present
+  when: ansible_os_family == "Debian"
+
+- apt_repository:
+    repo: deb https://apt.syncthing.net/ syncthing stable
+    state: present
+  when: ansible_os_family == "Debian"
+
+# Install Package
+- name: Install Syncthing
+  ansible.builtin.package:
+    name: syncthing
+    state: present
+
+# Create and enable service
+- name: Create syncthing service for {{ ansible_user }}
+  copy:
+    src: syncthing@.service
+    dest: /etc/systemd/system/syncthing@{{ ansible_user }}.service
+    owner: root
+    group: root
+    mode: 0644
+  register: syncthing_service
+  become: yes
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+  when: syncthing_service.changed
+  become: yes
+
+- name: Start and enable syncthing
+  systemd:
+    name: syncthing@{{ ansible_user }}.service
+    state: started
+    enabled: yes
+  become: yes
+
+- command: syncthing --version
+  register: result_syncthing
+  failed_when: false
+  changed_when: false
+
+- debug:
+    var: result_syncthing.stdout
