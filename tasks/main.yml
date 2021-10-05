@@ -28,10 +28,10 @@
     state: present
   tags: syncthing
 
-# Create user Syncthing
-- name: Add the user 'syncthing'
-  ansible.builtin.user:
-    name: syncthing
+# # Create user Syncthing
+# - name: Add the user 'syncthing'
+#   ansible.builtin.user:
+#     name: syncthing
 
 # Create and enable service
 - name: Create syncthing service for {{ ansible_user }}
